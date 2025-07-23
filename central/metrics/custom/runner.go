@@ -11,6 +11,7 @@ import (
 	custom "github.com/stackrox/rox/central/metrics/custom/tracker"
 	"github.com/stackrox/rox/generated/storage"
 	"github.com/stackrox/rox/pkg/grpc/authn"
+	"github.com/stackrox/rox/pkg/httputil"
 	"github.com/stackrox/rox/pkg/logging"
 	"github.com/stackrox/rox/pkg/sac"
 )
@@ -27,7 +28,7 @@ type RunnerConfiguration struct {
 	image_vulnerabilities *custom.Configuration
 }
 
-func makeRunner(registryFactory func(string) metrics.CustomRegistry, dds deploymentDS.DataStore) *aggregatorRunner {
+func makeRunner(registryFactory func(string) (metrics.CustomRegistry, error), dds deploymentDS.DataStore) *aggregatorRunner {
 	return &aggregatorRunner{
 		image_vulnerabilities: image_vulnerabilities.New(registryFactory, dds),
 	}
@@ -86,7 +87,11 @@ func (ar *aggregatorRunner) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		ctx := authn.CopyContextIdentity(context.Background(), req.Context())
 		go ar.image_vulnerabilities.Gather(ctx)
 	}
-	registry := metrics.GetCustomRegistry(userID)
+	registry, err := metrics.GetCustomRegistry(userID)
+	if err != nil {
+		httputil.WriteError(w, err)
+		return
+	}
 	registry.Lock()
 	defer registry.Unlock()
 	registry.ServeHTTP(w, req)
