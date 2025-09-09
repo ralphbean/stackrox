@@ -92,7 +92,7 @@ function ViewBasedReportsTab() {
         clearErrorBeforeRequest: false,
     });
 
-    // @TODO: Add polling
+    useInterval(refetch, 10000);
 
     const tableState = getTableUIState({
         isLoading,
@@ -119,8 +119,6 @@ function ViewBasedReportsTab() {
         setIsViewingOnlyMyJobs(String(checked));
         setPage(1);
     };
-
-    useInterval(refetch, 10000);
 
     return (
         <>

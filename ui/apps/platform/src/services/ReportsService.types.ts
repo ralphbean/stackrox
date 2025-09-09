@@ -134,6 +134,16 @@ export function isViewBasedReportSnapshot(
     return 'viewBasedVulnReportFilters' in snapshot;
 }
 
+export function isConfiguredReportSnapshot(snapshot: ReportSnapshot): snapshot is Snapshot & {
+    reportConfigId: string;
+    vulnReportFilters: VulnerabilityReportFilters;
+    collectionSnapshot: CollectionSnapshot;
+    schedule: Schedule | null;
+    notifiers: NotifierConfiguration[];
+} {
+    return 'reportConfigId' in snapshot && 'vulnReportFilters' in snapshot;
+}
+
 // API request/response types
 
 export type RunReportResponse = {

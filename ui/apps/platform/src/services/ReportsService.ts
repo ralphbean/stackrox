@@ -222,3 +222,26 @@ export function runViewBasedReport({
         .post<RunReportResponseViewBased>('/v2/reports/view-based/run', requestBody)
         .then((response) => response.data);
 }
+
+export function downloadReportByJobId({
+    reportJobId,
+    filename,
+    fileExtension,
+}: {
+    reportJobId: string;
+    filename: string;
+    fileExtension: string;
+}): Promise<void> {
+    const { saveFile } = require('./DownloadService');
+    const { sanitizeFilename } = require('../utils/fileUtils');
+    
+    const sanitizedFilename = sanitizeFilename(filename);
+    
+    return saveFile({
+        method: 'get',
+        url: `/api/reports/jobs/download?id=${reportJobId}`,
+        data: null,
+        timeout: 300000,
+        name: `${sanitizedFilename}.${fileExtension}`,
+    });
+}
